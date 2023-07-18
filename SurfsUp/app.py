@@ -83,62 +83,82 @@ def names():
     # Close Session
     session.close()
 
-    # Return the JSON representation of the dictionary.
+    # Return the JSON representation of the dictionary
     return jsonify(precipitation)
 
 @app.route("/api/v1.0/stations")
 def stations():
      # Create our session (link) from Python to the DB
     session = Session(engine)
+
+    """Return a list of stations from the dataset"""
+
+    # Create empty list for the loop
     session_list = []
+
+    # Create a list of all the stations
     for row in session.query(station.station).all():
         station_value = row[0]
         session_list.append(station_value)
 
+    # Close Session
     session.close()
 
+    # Return the JSON representation of the list
     return jsonify(session_list)
 
 @app.route("/api/v1.0/tobs")
 def most_active_station():
+    # Create our session (link) from Python to the DB
     session = Session(engine)
-    
+
+    """Return a list of temperature observations for the previous year for the most active station"""    
+
+    # Find the most active station
     most_active_stations = session.query(measurement.station,func.count(measurement.tobs)).\
     group_by(measurement.station).\
     order_by(func.count(measurement.tobs).desc()).all()
 
+    # Identify the id of the most active station
     most_active_station_id = most_active_stations[0][0]
 
+    # Create empty list for the loop
     date_list_most_active_station = []
 
+    # Query the dates for the most active station
     date_most_active_station = session.query(measurement.date).\
     filter(measurement.station == most_active_station_id).all()
 
+    # Create a list of the dates for the most active station
     for row in date_most_active_station:
         date_value = row[0]
         date_list_most_active_station.append(date_value)
 
+    # Find most recent date
     most_recent_date = max(date_list_most_active_station, key=lambda x: x)
 
     # Calculate the date one year from the last date in data set.
-
     most_recent_date_format = datetime.strptime(most_recent_date, "%Y-%m-%d")
     one_year_from_last_date = most_recent_date_format + timedelta(days=-365)
     result = one_year_from_last_date.strftime("%Y-%m-%d")
 
-    # Perform a query to retrieve the data and precipitation scores
-
+    # Perform a query to retrieve the temperature observations for the previous year for the most active station
     temperature_observation = session.query(measurement.station, measurement.date, measurement.tobs).\
     filter(measurement.date > result, measurement.station == most_active_station_id).\
     order_by(measurement.date).all()
 
+     # Create empty list for the loop
     most_active_station_list = []
+
+    # Create a list of the dates for the temperature observations for the previous year
     for row in temperature_observation:
         row_list = list(row)
         most_active_station_list.append(row_list)
 
+    # Close Session
     session.close()
 
+    # Return the JSON representation of the list
     return jsonify(most_active_station_list)
 
 #@app.route("/api/v1.0/<start>")
