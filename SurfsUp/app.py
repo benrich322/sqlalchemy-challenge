@@ -42,9 +42,10 @@ def welcome():
     return (
         f"Available Routes:<br/>"
         f"/api/v1.0/precipitation<br/>"
-        f"/api/v1.0/tob"
-        f"/api/v1.0/<start>"
-        f"/api/v1.0/<start>/<end>"
+        f"/api/v1.0/stations<br/>"
+        #f"/api/v1.0/tob"
+        #f"/api/v1.0/<start>"
+        #f"/api/v1.0/<start>/<end>"
     )
 @app.route("/api/v1.0/precipitation")
 def names():
@@ -83,7 +84,18 @@ def names():
 
     return jsonify(precipitation)
 
-#@app.route("/api/v1.0/tobs")
+@app.route("/api/v1.0/stations")
+def stations():
+     # Create our session (link) from Python to the DB
+    session = Session(engine)
+    session_list = []
+    for row in session.query(station.station).all():
+        station_value = row[0]
+        session_list.append(station_value)
+
+    session.close()
+
+    return jsonify(session_list)
 #@app.route("/api/v1.0/<start>")
 #@app.route("/api/v1.0/<start>/<end>")
 
