@@ -5,13 +5,14 @@ import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
-
+from datetime import datetime, timedelta
 from flask import Flask, jsonify
 
 #################################################
 # Database Setup
 #################################################
-engine = create_engine("sqlite:///hawaii.sqlite")
+engine = create_engine("sqlite:///Resources/hawaii.sqlite")
+conn = engine.connect()
 
 # reflect an existing database into a new model
 Base = automap_base()
@@ -20,7 +21,9 @@ Base = automap_base()
 Base.prepare(autoload_with=engine)
 
 # Save references to each table
-Passenger = Base.classes.passenger
+measurement = Base.classes.measurement
+station = Base.classes.station
+
 
 # Create our session (link) from Python to the DB
 session = Session(engine)
@@ -30,15 +33,59 @@ session = Session(engine)
 #################################################
 app = Flask(__name__)
 
-
-
 #################################################
 # Flask Routes
 #################################################
+@app.route("/")
+def welcome():
+    """List all available api routes."""
+    return (
+        f"Available Routes:<br/>"
+        f"/api/v1.0/precipitation<br/>"
+        f"/api/v1.0/tob"
+        f"/api/v1.0/<start>"
+        f"/api/v1.0/<start>/<end>"
+    )
 @app.route("/api/v1.0/precipitation")
-@app.route("/api/v1.0/tobs")
-@app.route("/api/v1.0/<start>")
-@app.route("/api/v1.0/<start>/<end>")
+def names():
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    """Return a list of all passenger names"""
+    # Query all passengers
+    date_list = []
+
+    for row in session.query(measurement.date).all():
+        date_value = row[0]
+        date_list.append(date_value)
+
+    most_recent_date = max(date_list, key=lambda x: x)
+    # Calculate the date one year from the last date in data set.
+    most_recent_date_format = datetime.strptime(most_recent_date, "%Y-%m-%d")
+    one_year_from_last_date = most_recent_date_format + timedelta(days=-365)
+    result = one_year_from_last_date.strftime("%Y-%m-%d")
+
+    # Perform a query to retrieve the data and precipitation scores
+
+    results = session.query(measurement.date, measurement.prcp).\
+    filter(measurement.date > result).\
+    order_by(measurement.date).all()
+
+    # Convert the query results from your precipitation analysis to a dictionary using date as the key and prcp as the value.
+    precipitation = []
+    for date, prcp in results:
+        precipitation_dict = {}
+        precipitation_dict["date"] = date
+        precipitation_dict["prcp"] = prcp
+        precipitation.append(precipitation_dict)
+
+    session.close()
+
+    return jsonify(precipitation)
+
+#@app.route("/api/v1.0/tobs")
+#@app.route("/api/v1.0/<start>")
+#@app.route("/api/v1.0/<start>/<end>")
 
 if __name__ == "__main__":
     app.run(debug=True)
