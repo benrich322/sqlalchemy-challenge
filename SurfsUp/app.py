@@ -147,7 +147,7 @@ def most_active_station():
     filter(measurement.date > result, measurement.station == most_active_station_id).\
     order_by(measurement.date).all()
 
-     # Create empty list for the loop
+    # Create empty list for the loop
     most_active_station_list = []
 
     # Create a list of the dates for the temperature observations for the previous year
