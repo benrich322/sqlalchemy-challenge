@@ -42,7 +42,7 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        #f"/api/v1.0/<start>"
+        f"/api/v1.0/<start>"
         #f"/api/v1.0/<start>/<end>"
     )
 @app.route("/api/v1.0/precipitation")
@@ -161,7 +161,27 @@ def most_active_station():
     # Return the JSON representation of the list
     return jsonify(most_active_station_list)
 
-#@app.route("/api/v1.0/<start>")
+@app.route("/api/v1.0/<start>")
+def test(start_date):
+     
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    """Return a list of the minimum temperature, the average temperature,
+    and the maximum temperature for a specified start range, or a 404 if not."""
+
+    date_values = session.query(measurement.date, func.min(measurement.tobs),func.max(measurement.tobs),func.avg(measurement.tobs)).\
+    filter(measurement.date == start_date).\
+    group_by(measurement.date).all()
+
+    date_list_test = []
+    for row in date_list_test:
+        search_term = row["date"].replace(" ", "")
+
+        if search_term == start_date:
+            return jsonify(row)
+
+    return jsonify({"error": "date not found."}), 404
 #@app.route("/api/v1.0/<start>/<end>")
 
 if __name__ == "__main__":
