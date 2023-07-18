@@ -96,6 +96,48 @@ def stations():
     session.close()
 
     return jsonify(session_list)
+
+@app.route("/api/v1.0/tobs")
+def most_active_station():
+    session = Session(engine)
+    
+    most_active_stations = session.query(measurement.station,func.count(measurement.tobs)).\
+    group_by(measurement.station).\
+    order_by(func.count(measurement.tobs).desc()).all()
+
+    most_active_station_id = most_active_stations[0][0]
+
+    date_list_most_active_station = []
+
+    date_most_active_station = session.query(measurement.date).\
+    filter(measurement.station == most_active_station_id).all()
+
+    for row in date_most_active_station:
+        date_value = row[0]
+        date_list_most_active_station.append(date_value)
+
+    most_recent_date = max(date_list_most_active_station, key=lambda x: x)
+
+    # Calculate the date one year from the last date in data set.
+
+    most_recent_date_format = datetime.strptime(most_recent_date, "%Y-%m-%d")
+    one_year_from_last_date = most_recent_date_format + timedelta(days=-365)
+    result = one_year_from_last_date.strftime("%Y-%m-%d")
+
+    # Perform a query to retrieve the data and precipitation scores
+
+    temperature_observation = session.query(measurement.station, measurement.date, measurement.tobs).\
+    filter(measurement.date > result, measurement.station == most_active_station_id).\
+    order_by(measurement.date).all()
+
+    most_active_station_list = []
+    for row in temperature_observation:
+        most_active_station_list.append(row)
+
+    session.close()
+
+    return jsonify(most_active_station_list)
+
 #@app.route("/api/v1.0/<start>")
 #@app.route("/api/v1.0/<start>/<end>")
 
