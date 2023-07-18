@@ -1,6 +1,5 @@
 # Import the dependencies.
 import numpy as np
-
 import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
@@ -23,7 +22,6 @@ Base.prepare(autoload_with=engine)
 # Save references to each table
 measurement = Base.classes.measurement
 station = Base.classes.station
-
 
 # Create our session (link) from Python to the DB
 session = Session(engine)
@@ -52,22 +50,24 @@ def names():
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    """Return a list of all passenger names"""
-    # Query all passengers
-    date_list = []
+    """Return a dict of the precipitation analysis"""
 
+    # Create empty list for the loop
+    date_list = []
+    # Create a list of all the measurement dates
     for row in session.query(measurement.date).all():
         date_value = row[0]
         date_list.append(date_value)
 
+    # Find most recent date in list
     most_recent_date = max(date_list, key=lambda x: x)
-    # Calculate the date one year from the last date in data set.
+
+    # Calculate the date one year from the last date in data set
     most_recent_date_format = datetime.strptime(most_recent_date, "%Y-%m-%d")
     one_year_from_last_date = most_recent_date_format + timedelta(days=-365)
     result = one_year_from_last_date.strftime("%Y-%m-%d")
 
     # Perform a query to retrieve the data and precipitation scores
-
     results = session.query(measurement.date, measurement.prcp).\
     filter(measurement.date > result).\
     order_by(measurement.date).all()
@@ -80,8 +80,10 @@ def names():
         precipitation_dict["prcp"] = prcp
         precipitation.append(precipitation_dict)
 
+    # Close Session
     session.close()
 
+    # Return the JSON representation of the dictionary.
     return jsonify(precipitation)
 
 @app.route("/api/v1.0/stations")
