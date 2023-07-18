@@ -43,7 +43,7 @@ def welcome():
         f"Available Routes:<br/>"
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
-        #f"/api/v1.0/tob"
+        f"/api/v1.0/tobs<br/>"
         #f"/api/v1.0/<start>"
         #f"/api/v1.0/<start>/<end>"
     )
@@ -132,7 +132,8 @@ def most_active_station():
 
     most_active_station_list = []
     for row in temperature_observation:
-        most_active_station_list.append(row)
+        row_list = list(row)
+        most_active_station_list.append(row_list)
 
     session.close()
 
