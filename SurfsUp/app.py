@@ -1,4 +1,4 @@
-# Import the dependencies.
+# Import the dependencies
 import numpy as np
 import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
