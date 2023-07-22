@@ -42,7 +42,7 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/<start>"
+        f"/api/v1.0/start_date/2013-07-06"
         #f"/api/v1.0/<start>/<end>"
     )
 @app.route("/api/v1.0/precipitation")
@@ -161,7 +161,7 @@ def most_active_station():
     # Return the JSON representation of the list
     return jsonify(most_active_station_list)
 
-@app.route("/api/v1.0/<start>")
+@app.route("/api/v1.0/start_date/<start_date>")
 def test(start_date):
      
     # Create our session (link) from Python to the DB
@@ -169,20 +169,25 @@ def test(start_date):
 
     """Return a list of the minimum temperature, the average temperature,
     and the maximum temperature for a specified start range, or a 404 if not."""
-
-    date_values = session.query(measurement.date, func.min(measurement.tobs),func.max(measurement.tobs),func.avg(measurement.tobs)).\
-    filter(measurement.date == start_date).\
-    group_by(measurement.date).all()
+    #start_date = "2014-03-03"
+    date_values = session.query(func.min(measurement.tobs),func.max(measurement.tobs),func.avg(measurement.tobs)).\
+    filter(measurement.date >= start_date).all()
 
     date_list_test = []
-    for row in date_list_test:
-        search_term = row["date"].replace(" ", "")
+    for row in date_values:
+        row_list = list(row)
+        date_list_test.append(row_list)
+      # Close Session
+    session.close()
 
-        if search_term == start_date:
-            return jsonify(row)
+    # Return the JSON representation of the list
+    return jsonify(date_list_test)
 
-    return jsonify({"error": "date not found."}), 404
+    #return jsonify({"error": f"Character with real_name {test} not found."}), 404
+
+  #  return jsonify({"error": "date not found."}), 404
 #@app.route("/api/v1.0/<start>/<end>")
+
 
 if __name__ == "__main__":
     app.run(debug=True)
