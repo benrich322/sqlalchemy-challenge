@@ -168,7 +168,7 @@ def temperature_data_date(start_date):
     session = Session(engine)
 
     """Return a list of the minimum temperature, the average temperature,
-    and the maximum temperature for a specified start range, or a 404 if not."""
+    and the maximum temperature for a specified start range."""
     # Query the min, max, and avg temperatures above the start date
     date_values = session.query(func.min(measurement.tobs),func.max(measurement.tobs),func.avg(measurement.tobs)).\
     filter(measurement.date >= start_date).all()
@@ -192,7 +192,7 @@ def temperature_data_date_range(start_date,end_date):
     session = Session(engine)
 
     """Return a list of the minimum temperature, the average temperature,
-    and the maximum temperature for a specified start range, or a 404 if not."""
+    and the maximum temperature for a specified date range."""
     # Query the min, max, and avg temperatures for the date range
     date_values = session.query(func.min(measurement.tobs),func.max(measurement.tobs),func.avg(measurement.tobs)).\
     filter(measurement.date >= start_date, measurement.date <= end_date).all()
