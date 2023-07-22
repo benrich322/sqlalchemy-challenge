@@ -42,8 +42,8 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/start_date/2013-07-06"
-        #f"/api/v1.0/<start>/<end>"
+        f"/api/v1.0/start_date/2013-07-06<br/>"
+        f"/api/v1.0/start_date/end_date/2013-07-06/2015-07-06"
     )
 @app.route("/api/v1.0/precipitation")
 def names():
@@ -162,32 +162,52 @@ def most_active_station():
     return jsonify(most_active_station_list)
 
 @app.route("/api/v1.0/start_date/<start_date>")
-def test(start_date):
+def temperature_data_date(start_date):
      
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
     """Return a list of the minimum temperature, the average temperature,
     and the maximum temperature for a specified start range, or a 404 if not."""
-    #start_date = "2014-03-03"
+    # Query the min, max, and avg temperatures above the start date
     date_values = session.query(func.min(measurement.tobs),func.max(measurement.tobs),func.avg(measurement.tobs)).\
     filter(measurement.date >= start_date).all()
 
-    date_list_test = []
+    # Create empty list for the loop
+    max_min_avg_list = []
     for row in date_values:
         row_list = list(row)
-        date_list_test.append(row_list)
-      # Close Session
+        max_min_avg_list.append(row_list)
+    
+    # Close Session
     session.close()
 
     # Return the JSON representation of the list
-    return jsonify(date_list_test)
+    return jsonify(max_min_avg_list)
 
-    #return jsonify({"error": f"Character with real_name {test} not found."}), 404
+@app.route("/api/v1.0/start_date/end_date/<start_date>/<end_date>")
+def temperature_data_date_range(start_date,end_date):
+     
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
 
-  #  return jsonify({"error": "date not found."}), 404
-#@app.route("/api/v1.0/<start>/<end>")
+    """Return a list of the minimum temperature, the average temperature,
+    and the maximum temperature for a specified start range, or a 404 if not."""
+    # Query the min, max, and avg temperatures for the date range
+    date_values = session.query(func.min(measurement.tobs),func.max(measurement.tobs),func.avg(measurement.tobs)).\
+    filter(measurement.date >= start_date, measurement.date <= end_date).all()
 
+    # Create empty list for the loop
+    max_min_avg_list = []
+    for row in date_values:
+        row_list = list(row)
+        max_min_avg_list.append(row_list)
+    
+    # Close Session
+    session.close()
+
+    # Return the JSON representation of the list
+    return jsonify(max_min_avg_list)
 
 if __name__ == "__main__":
     app.run(debug=True)
