@@ -42,8 +42,8 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/start_date/2013-07-06<br/>"
-        f"/api/v1.0/start_date/end_date/2013-07-06/2015-07-06"
+        f"/api/v1.0/start_date/2010-01-10<br/>"
+        f"/api/v1.0/start_date/end_date/2010-01-10/2017-08-23"
     )
 @app.route("/api/v1.0/precipitation")
 def names():
